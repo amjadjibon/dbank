@@ -24,5 +24,5 @@ func Execute() {
 }
 
 func init() {
-	// TODO: Add subcommands
+	rootCmd.AddCommand(versionCmd)
 }
