@@ -2,7 +2,10 @@ module github.com/amjadjibon/dbank
 
 go 1.23
 
-require github.com/spf13/cobra v1.8.1
+require (
+	github.com/caarlos0/env/v11 v11.2.2
+	github.com/spf13/cobra v1.8.1
+)
 
 require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
