@@ -28,7 +28,7 @@ func getCommitHash() string {
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version number of dbank",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(*cobra.Command, []string) {
 		fmt.Printf("dbank: %s\n", Version)
 		fmt.Printf("git: %s\n", getCommitHash())
 		fmt.Printf("golang: %s\n", runtime.Version())

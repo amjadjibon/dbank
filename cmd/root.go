@@ -11,7 +11,7 @@ var rootCmd = &cobra.Command{
 	Short: "Digital Bank CLI tool to manage migrations, seeds, server and more",
 	Long: `Digital Bank CLI tool to manage migrations, seeds, server and more
 Complete documentation is available at https://github.com/amjadjibon/dbank`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, _ []string) {
 		_ = cmd.Help()
 	},
 }
