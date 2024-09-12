@@ -21,6 +21,7 @@ linters:
     - gocyclo
     - sloglint
     - tagalign
+    - errcheck
 
 linters-settings:
   lll:
@@ -33,3 +34,5 @@ linters-settings:
     context: all
     static-msg: true
     key-naming-case: snake
+  errcheck:
+    check-type-assertions: true
