@@ -15,6 +15,21 @@ linters:
     - typecheck
     - unconvert
     - unused
+    - lll
+    - gosec
+    - gosimple
+    - gocyclo
+    - sloglint
+    - tagalign
+
 linters-settings:
+  lll:
+    line-length: 120
   gofumpt:
-    simplify: true
+    extra-rules: true
+  sloglint:
+    kv-only: true
+    no-global: all
+    context: all
+    static-msg: true
+    key-naming-case: snake
