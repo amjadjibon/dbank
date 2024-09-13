@@ -22,7 +22,8 @@ func MigrateDown(ctx context.Context, dbURL string) error {
 }
 
 func runMigrations(ctx context.Context, cmd, dbURL string) error {
-	db, err := goose.OpenDBWithDriver(getDriver(dbURL), dbURL)
+	driver, directory := getDBConfig(dbURL)
+	db, err := goose.OpenDBWithDriver(driver, dbURL)
 	if err != nil {
 		return err
 	}
@@ -32,19 +33,21 @@ func runMigrations(ctx context.Context, cmd, dbURL string) error {
 	}()
 
 	goose.SetBaseFS(migrationsFS)
-	if err := goose.RunContext(ctx, cmd, db, "migrations"); err != nil {
+	if err := goose.RunContext(ctx, cmd, db, directory); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func getDriver(dbURL string) string {
-	driver := "sqlite"
+func getDBConfig(dbURL string) (driver, directory string) {
+	driver = "sqlite"
+	directory = "migrations/sqlite"
 
 	if strings.HasPrefix(dbURL, "postgres") {
 		driver = "pgx"
+		directory = "migrations/postgres"
 	}
 
-	return driver
+	return driver, directory
 }

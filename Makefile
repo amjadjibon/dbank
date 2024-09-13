@@ -7,3 +7,21 @@ lint:
 	@echo "Linting..."
 	@golangci-lint run --fix
 	@echo "Lint complete"
+
+migrate-up: build
+	@echo "Migrating up..."
+	@./bin/dbank migrate up
+	@echo "Migrations complete"
+
+migrate-down: build
+	@echo "Migrating down..."
+	@./bin/dbank migrate down
+	@echo "Migrations complete"
+
+start-db-local:
+	@docker-compose -f compose.yml up -d
+	@echo "Database started"
+
+stop-db-local:
+	@docker-compose -f compose.yml down --volumes --remove-orphans
+	@echo "Database stopped"

@@ -49,6 +49,16 @@ func init() {
 	migrateUpCmd.Flags().StringVarP(&dbURL, "db-url", "d", "", "Database URL")
 	migrateDownCmd.Flags().StringVarP(&dbURL, "db-url", "d", "", "Database URL")
 
-	_ = migrateUpCmd.MarkFlagRequired("db-url")
-	_ = migrateDownCmd.MarkFlagRequired("db-url")
+	migrateUpCmd.PreRun = checkAndSetDBURL
+	migrateDownCmd.PreRun = checkAndSetDBURL
+}
+
+func checkAndSetDBURL(*cobra.Command, []string) {
+	if dbURL == "" {
+		dbURL = os.Getenv("DB_URL")
+		if dbURL == "" {
+			fmt.Println("set DB_URL environment variable or pass it as a flag --db-url=<db-url>")
+			os.Exit(1)
+		}
+	}
 }
