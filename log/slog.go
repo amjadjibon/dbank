@@ -11,8 +11,8 @@ const (
 	projectName = "dbank"
 )
 
-// RequestIdKey is the key for the request ID in the context
-var RequestIdKey struct{}
+// RequestIDKey is the key for the request ID in the context
+var RequestIDKey struct{}
 
 // HandlerRequestID is a slog.Handler that adds the request ID to the record
 type HandlerRequestID struct {
@@ -21,7 +21,7 @@ type HandlerRequestID struct {
 
 // Handle handles the record and adds the request ID to the record
 func (h HandlerRequestID) Handle(ctx context.Context, r slog.Record) error {
-	if requestID, ok := ctx.Value(RequestIdKey).(string); ok {
+	if requestID, ok := ctx.Value(RequestIDKey).(string); ok {
 		r.Add("request_id", slog.StringValue(requestID))
 	}
 	return h.Handler.Handle(ctx, r)
@@ -70,11 +70,12 @@ func trimFileName(fileName string) string {
 }
 
 // Replacer is a slog.Attr replacer
-func Replacer(groups []string, a slog.Attr) slog.Attr {
+func Replacer(_ []string, a slog.Attr) slog.Attr {
 	if a.Key == slog.SourceKey {
-		source := a.Value.Any().(*slog.Source)
-		source.File = trimFileName(source.File)
-		source.Function = trimFuncName(source.Function)
+		if source, ok := a.Value.Any().(*slog.Source); ok {
+			source.File = trimFileName(source.File)
+			source.Function = trimFuncName(source.Function)
+		}
 	}
 	return a
 }
@@ -104,7 +105,7 @@ func GetLogger(level string) *slog.Logger {
 
 // GetRequestID returns the request ID from the context
 func GetRequestID(ctx context.Context) string {
-	if requestID, ok := ctx.Value(RequestIdKey).(string); ok {
+	if requestID, ok := ctx.Value(RequestIDKey).(string); ok {
 		return requestID
 	}
 	return ""
