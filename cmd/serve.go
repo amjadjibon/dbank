@@ -1,21 +1,30 @@
 package cmd
 
 import (
-	"net/http"
+	"os/signal"
+	"syscall"
 
 	"github.com/spf13/cobra"
 
-	"github.com/amjadjibon/dbank/handler"
+	"github.com/amjadjibon/dbank/conf"
+	"github.com/amjadjibon/dbank/server"
 )
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Starts the HTTP server",
-	Run: func(cmd *cobra.Command, args []string) {
-		mux := http.NewServeMux()
-		mux.HandleFunc("/swagger", handler.SwaggerUI)
-		mux.HandleFunc("/swagger/v1/openapiv2.json", handler.SwaggerAPIv1)
-		if err := http.ListenAndServe(":8080", mux); err != nil {
+	Run: func(cmd *cobra.Command, _ []string) {
+		cfg := conf.NewConfig()
+
+		ctx, stop := signal.NotifyContext(cmd.Context(), syscall.SIGINT, syscall.SIGTERM)
+		defer stop()
+
+		server, err := server.NewServer(ctx, cfg)
+		if err != nil {
+			cmd.PrintErr(err)
+		}
+
+		if err := server.Start(ctx); err != nil {
 			cmd.PrintErr(err)
 		}
 	},

@@ -61,7 +61,7 @@ func SwaggerUI(w http.ResponseWriter, _ *http.Request) {
 func SwaggerAPIv1(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write(docs.ApiV1JSON); err != nil {
+	if _, err := w.Write(docs.APIV11JSON); err != nil {
 		fmt.Println(err)
 	}
 }

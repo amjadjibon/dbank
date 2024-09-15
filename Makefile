@@ -8,6 +8,10 @@ lint:
 	@golangci-lint run --fix
 	@echo "Lint complete"
 
+serve: build
+	@echo "Starting server..."
+	@./bin/dbank serve
+
 migrate-up: build
 	@echo "Migrating up..."
 	@./bin/dbank migrate up

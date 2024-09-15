@@ -5,4 +5,4 @@ import (
 )
 
 //go:embed apidocs.swagger.yaml
-var ApiV1JSON []byte
+var APIV11JSON []byte
