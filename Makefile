@@ -1,7 +1,13 @@
+.PHONY: build lint serve migrate-up migrate-down start-db-local stop-db-local gen
 build: lint
 	@echo "Building..."
 	@CGO_ENABLED=0 GOFLAGS="-buildvcs=true" go build -o bin/dbank
 	@echo "Build complete"
+
+gen:
+	@echo "Generating..."
+	@cd proto && buf generate && cd ..
+	@echo "Generation complete"
 
 lint:
 	@echo "Linting..."
