@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+	"fmt"
 
 	usersv1 "github.com/amjadjibon/dbank/gen/go/users/v1"
 )
@@ -17,6 +18,7 @@ func NewService() *Service {
 var _ usersv1.UsersServiceServer = (*Service)(nil)
 
 func (u Service) CreateUser(context.Context, *usersv1.CreateUserRequest) (*usersv1.CreateUserResponse, error) {
+	fmt.Println("CreateUser called")
 	return &usersv1.CreateUserResponse{}, nil
 }
 

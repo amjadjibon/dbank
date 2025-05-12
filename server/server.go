@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -20,6 +19,7 @@ import (
 
 	"github.com/amjadjibon/dbank/conf"
 	usersv1 "github.com/amjadjibon/dbank/gen/go/users/v1"
+	"github.com/amjadjibon/dbank/handler"
 	"github.com/amjadjibon/dbank/log"
 	"github.com/amjadjibon/dbank/server/users"
 )
@@ -51,10 +51,13 @@ func NewServer(
 	}
 
 	router := chi.NewRouter()
-	router.HandleFunc("/api/*", func(w http.ResponseWriter, r *http.Request) {
-		r.URL.Path = strings.ReplaceAll(r.URL.Path, "/api", "")
+	router.HandleFunc("/dbank/*", func(w http.ResponseWriter, r *http.Request) {
 		mux.ServeHTTP(w, r)
 	})
+
+	// Add Swagger UI routes
+	router.Get("/swagger/", handler.SwaggerUI)
+	router.Get("/swagger/v1/openapiv2.json", handler.SwaggerAPIv1)
 
 	httpAddr := fmt.Sprintf("%s:%d", cfg.Host, cfg.HTTPPort)
 	httpServer := &http.Server{
