@@ -1,4 +1,4 @@
-package handler
+package swagger
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"github.com/amjadjibon/dbank/docs"
 )
 
-func SwaggerUI(w http.ResponseWriter, _ *http.Request) {
+func UI(w http.ResponseWriter, _ *http.Request) {
 	swaggerTemplate := template.Must(template.New("swagger").Parse(`
 <html>
 	<head>
@@ -58,7 +58,7 @@ func SwaggerUI(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func SwaggerAPIv1(w http.ResponseWriter, _ *http.Request) {
+func APIv1(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	if _, err := w.Write(docs.APIV11JSON); err != nil {
