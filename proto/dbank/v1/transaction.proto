@@ -6,9 +6,54 @@ option go_package = "github.com/amjadjibon/dbank/gen/go/dbank/v1";
 
 import "google/api/annotations.proto";
 
-message Account {
+service TransactionService {
+  rpc CreateTransaction(CreateTransactionRequest) returns (CreateTransactionResponse) {
+    option (google.api.http) = {
+      post: "/dbank/v1/transactions"
+      body: "*"
+    };
+  }
+
+  rpc GetTransaction(GetTransactionRequest) returns (GetTransactionResponse) {
+    option (google.api.http) = {
+      get: "/dbank/v1/transactions/{id}"
+    };
+  }
+}
+
+message CreateTransactionRequest {
+  string from_account_id = 1;
+  string to_account_id = 2;
+  string transaction_type = 3;
+  double amount = 4;
+  string currency = 5;
+  string description = 6;
+}
+
+message CreateTransactionResponse {
   string id = 1;
-  string name = 2;
-  string email = 3;
-  string password = 4;
+  string from_account_id = 2;
+  string to_account_id = 3;
+  string transaction_type = 4;
+  double amount = 5;
+  string currency = 6;
+  string description = 7;
+  string status = 8;
+  string created_at = 9;
+}
+
+message GetTransactionRequest {
+  string id = 1;
+}
+
+message GetTransactionResponse {
+  string id = 1;
+  string from_account_id = 2;
+  string to_account_id = 3;
+  string transaction_type = 4;
+  double amount = 5;
+  string currency = 6;
+  string description = 7;
+  string status = 8;
+  string created_at = 9;
 }

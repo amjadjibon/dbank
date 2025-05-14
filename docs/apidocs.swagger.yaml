@@ -1,14 +1,135 @@
 swagger: "2.0"
 info:
-  title: users/v1/users.proto
+  title: dbank/v1/account.proto
   version: version not set
 tags:
+  - name: AccountService
+  - name: TransactionService
   - name: UsersService
 consumes:
   - application/json
 produces:
   - application/json
 paths:
+  /dbank/v1/accounts:
+    post:
+      operationId: AccountService_CreateAccount
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1CreateAccountResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/v1CreateAccountRequest'
+      tags:
+        - AccountService
+  /dbank/v1/accounts/{id}:
+    get:
+      operationId: AccountService_GetAccount
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1GetAccountResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+      tags:
+        - AccountService
+    delete:
+      operationId: AccountService_DeleteAccount
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1DeleteAccountResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+      tags:
+        - AccountService
+    put:
+      operationId: AccountService_UpdateAccount
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1UpdateAccountResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AccountServiceUpdateAccountBody'
+      tags:
+        - AccountService
+  /dbank/v1/transactions:
+    post:
+      operationId: TransactionService_CreateTransaction
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1CreateTransactionResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/v1CreateTransactionRequest'
+      tags:
+        - TransactionService
+  /dbank/v1/transactions/{id}:
+    get:
+      operationId: TransactionService_GetTransaction
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1GetTransactionResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+      tags:
+        - TransactionService
   /dbank/v1/users:
     post:
       operationId: UsersService_CreateUser
@@ -90,6 +211,25 @@ paths:
       tags:
         - UsersService
 definitions:
+  AccountServiceUpdateAccountBody:
+    type: object
+    properties:
+      username:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      accountName:
+        type: string
+      accountType:
+        type: string
+      accountBalance:
+        type: string
+      accountCurrency:
+        type: string
+      accountStatus:
+        type: string
   UsersServiceUpdateUserBody:
     type: object
     properties:
@@ -118,6 +258,84 @@ definitions:
         items:
           type: object
           $ref: '#/definitions/protobufAny'
+  v1CreateAccountRequest:
+    type: object
+    properties:
+      username:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      accountName:
+        type: string
+      accountType:
+        type: string
+      accountBalance:
+        type: string
+      accountCurrency:
+        type: string
+      accountStatus:
+        type: string
+  v1CreateAccountResponse:
+    type: object
+    properties:
+      id:
+        type: string
+      username:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      accountName:
+        type: string
+      accountType:
+        type: string
+      accountBalance:
+        type: string
+      accountCurrency:
+        type: string
+      accountStatus:
+        type: string
+  v1CreateTransactionRequest:
+    type: object
+    properties:
+      fromAccountId:
+        type: string
+      toAccountId:
+        type: string
+      transactionType:
+        type: string
+      amount:
+        type: number
+        format: double
+      currency:
+        type: string
+      description:
+        type: string
+  v1CreateTransactionResponse:
+    type: object
+    properties:
+      id:
+        type: string
+      fromAccountId:
+        type: string
+      toAccountId:
+        type: string
+      transactionType:
+        type: string
+      amount:
+        type: number
+        format: double
+      currency:
+        type: string
+      description:
+        type: string
+      status:
+        type: string
+      createdAt:
+        type: string
   v1CreateUserRequest:
     type: object
     properties:
@@ -132,10 +350,60 @@ definitions:
     properties:
       id:
         type: string
+  v1DeleteAccountResponse:
+    type: object
+    properties:
+      id:
+        type: string
+      message:
+        type: string
   v1DeleteUserResponse:
     type: object
     properties:
       id:
+        type: string
+  v1GetAccountResponse:
+    type: object
+    properties:
+      id:
+        type: string
+      username:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      accountName:
+        type: string
+      accountType:
+        type: string
+      accountBalance:
+        type: string
+      accountCurrency:
+        type: string
+      accountStatus:
+        type: string
+  v1GetTransactionResponse:
+    type: object
+    properties:
+      id:
+        type: string
+      fromAccountId:
+        type: string
+      toAccountId:
+        type: string
+      transactionType:
+        type: string
+      amount:
+        type: number
+        format: double
+      currency:
+        type: string
+      description:
+        type: string
+      status:
+        type: string
+      createdAt:
         type: string
   v1GetUserResponse:
     type: object
@@ -145,6 +413,27 @@ definitions:
       name:
         type: string
       email:
+        type: string
+  v1UpdateAccountResponse:
+    type: object
+    properties:
+      id:
+        type: string
+      username:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      accountName:
+        type: string
+      accountType:
+        type: string
+      accountBalance:
+        type: string
+      accountCurrency:
+        type: string
+      accountStatus:
         type: string
   v1UpdateUserResponse:
     type: object

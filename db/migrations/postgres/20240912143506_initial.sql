@@ -48,8 +48,8 @@ CREATE TABLE dbank_role_permissions (
     role_pk        INT           NOT NULL,
     perm_pk        INT           NOT NULL,
     created_at     TIMESTAMPTZ   NOT NULL DEFAULT now(),
-    FOREIGN KEY (role_pk) REFERENCES dbank_roles(pk)       ON DELETE CASCADE,
-    FOREIGN KEY (perm_pk) FOREIGN KEY (perm_pk) REFERENCES dbank_permissions(pk) ON DELETE CASCADE
+    FOREIGN KEY (role_pk) REFERENCES dbank_roles(pk) ON DELETE CASCADE,
+    FOREIGN KEY (perm_pk) REFERENCES dbank_permissions(pk) ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX idx_dbank_role_perms_unique ON dbank_role_permissions(role_pk, perm_pk);
 

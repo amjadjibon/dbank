@@ -6,9 +6,106 @@ option go_package = "github.com/amjadjibon/dbank/gen/go/dbank/v1";
 
 import "google/api/annotations.proto";
 
-message Account {
+service AccountService {
+  rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse) {
+    option (google.api.http) = {
+      post: "/dbank/v1/accounts"
+      body: "*"
+    };
+  }
+
+  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse) {
+    option (google.api.http) = {
+      get: "/dbank/v1/accounts/{id}"
+    };
+  }
+
+  rpc UpdateAccount(UpdateAccountRequest) returns (UpdateAccountResponse) {
+    option (google.api.http) = {
+      put: "/dbank/v1/accounts/{id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse) {
+    option (google.api.http) = {
+      delete: "/dbank/v1/accounts/{id}"
+    };
+  }
+}
+message CreateAccountRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+  
+  string account_name = 4;
+  string account_type = 5;
+  string account_balance = 6;
+  string account_currency = 7;
+  string account_status = 8;
+}
+
+message CreateAccountResponse {
   string id = 1;
-  string name = 2;
+  string username = 2;
   string email = 3;
   string password = 4;
+  
+  string account_name = 5;
+  string account_type = 6;
+  string account_balance = 7;
+  string account_currency = 8;
+  string account_status = 9;
+}
+
+message GetAccountRequest {
+  string id = 1;
+}
+
+message GetAccountResponse {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  string password = 4;
+  
+  string account_name = 5;
+  string account_type = 6;
+  string account_balance = 7;
+  string account_currency = 8;
+  string account_status = 9;
+}
+
+message UpdateAccountRequest {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  string password = 4;
+  
+  string account_name = 5;
+  string account_type = 6;
+  string account_balance = 7;
+  string account_currency = 8;
+  string account_status = 9;
+}
+
+message UpdateAccountResponse {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  string password = 4;
+  
+  string account_name = 5;
+  string account_type = 6;
+  string account_balance = 7;
+  string account_currency = 8;
+  string account_status = 9;
+}
+
+message DeleteAccountRequest {
+  string id = 1;
+}
+
+message DeleteAccountResponse {
+  string id = 1;
+  string message = 2;
 }
