@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package dbank.v1;
+
+option go_package = "github.com/amjadjibon/dbank/gen/go/dbank/v1";
+
+import "google/api/annotations.proto";
+
+message Account {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  string password = 4;
+}
