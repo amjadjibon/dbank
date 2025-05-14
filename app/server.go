@@ -1,4 +1,4 @@
-package server
+package app
 
 import (
 	"context"
@@ -17,11 +17,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
+	"github.com/amjadjibon/dbank/app/swagger"
+	"github.com/amjadjibon/dbank/app/users"
 	"github.com/amjadjibon/dbank/conf"
 	usersv1 "github.com/amjadjibon/dbank/gen/go/users/v1"
 	"github.com/amjadjibon/dbank/pkg/log"
-	"github.com/amjadjibon/dbank/server/swagger"
-	"github.com/amjadjibon/dbank/server/users"
 )
 
 type Server struct {

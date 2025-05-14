@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/amjadjibon/dbank/app"
 	"github.com/amjadjibon/dbank/conf"
-	"github.com/amjadjibon/dbank/server"
 )
 
 var serveCmd = &cobra.Command{
@@ -19,7 +19,7 @@ var serveCmd = &cobra.Command{
 		ctx, stop := signal.NotifyContext(cmd.Context(), syscall.SIGINT, syscall.SIGTERM)
 		defer stop()
 
-		server, err := server.NewServer(ctx, cfg)
+		server, err := app.NewServer(ctx, cfg)
 		if err != nil {
 			cmd.PrintErr(err)
 		}
