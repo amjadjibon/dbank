@@ -20,7 +20,7 @@ import (
 	"github.com/amjadjibon/dbank/conf"
 	usersv1 "github.com/amjadjibon/dbank/gen/go/users/v1"
 	"github.com/amjadjibon/dbank/handler"
-	"github.com/amjadjibon/dbank/log"
+	"github.com/amjadjibon/dbank/pkg/log"
 	"github.com/amjadjibon/dbank/server/users"
 )
 
