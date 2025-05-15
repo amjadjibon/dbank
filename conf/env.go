@@ -9,6 +9,7 @@ type Config struct {
 	Host     string `env:"HOST"      envDefault:"0.0.0.0"`
 	HTTPPort int    `env:"HTTP_PORT" envDefault:"8080"`
 	GrpcPort int    `env:"GRPC_PORT" envDefault:"50051"`
+	DbURL    string `env:"DB_URL"`
 }
 
 func NewConfig() *Config {

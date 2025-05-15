@@ -10,8 +10,8 @@ const DefaultCost = 10
 
 var ErrMismatchedHashAndPassword = errors.New("mismatched hash and password")
 
-func HashPassword(password []byte) ([]byte, error) {
-	return bcrypt.GenerateFromPassword(password, DefaultCost)
+func HashPassword(password string) ([]byte, error) {
+	return bcrypt.GenerateFromPassword([]byte(password), DefaultCost)
 }
 
 func VerifyPassword(hashedPassword, password []byte) error {

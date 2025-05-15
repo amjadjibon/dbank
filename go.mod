@@ -3,8 +3,10 @@ module github.com/amjadjibon/dbank
 go 1.24
 
 require (
+	github.com/Masterminds/squirrel v1.5.4
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/go-chi/chi/v5 v5.2.1
+	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3
 	github.com/spf13/cobra v1.9.1
 	golang.org/x/crypto v0.38.0
@@ -16,10 +18,11 @@ require (
 
 require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
+	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
+	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect

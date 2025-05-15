@@ -17,10 +17,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
+	"github.com/amjadjibon/dbank/app/accounts"
 	"github.com/amjadjibon/dbank/app/swagger"
 	"github.com/amjadjibon/dbank/app/users"
 	"github.com/amjadjibon/dbank/conf"
+	dbankv1 "github.com/amjadjibon/dbank/gen/go/dbank/v1"
 	usersv1 "github.com/amjadjibon/dbank/gen/go/users/v1"
+	"github.com/amjadjibon/dbank/pkg/dbx"
 	"github.com/amjadjibon/dbank/pkg/log"
 )
 
@@ -37,15 +40,39 @@ func NewServer(
 ) (*Server, error) {
 	logger := log.GetLogger(cfg.LogLevel)
 
+	db, err := dbx.NewPostgres(cfg.DbURL,
+		dbx.MaxPoolSize(10),
+		dbx.ConnAttempts(10),
+		dbx.ConnTimeout(1*time.Second),
+	)
+	if err != nil {
+		return nil, err
+	}
+	if err = db.Pool.Ping(ctx); err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
+	logger.InfoContext(ctx, "connected to database",
+		"db_url", cfg.DbURL,
+	)
+
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 
 	usersService := users.NewService()
 	usersv1.RegisterUsersServiceServer(grpcServer, usersService)
+
+	accountsService := accounts.NewService(logger, db)
+	dbankv1.RegisterAccountServiceServer(grpcServer, accountsService)
+
 	reflection.Register(grpcServer)
 
 	mux := runtime.NewServeMux()
-	err := usersv1.RegisterUsersServiceHandlerServer(ctx, mux, usersService)
+	err = usersv1.RegisterUsersServiceHandlerServer(ctx, mux, usersService)
+	if err != nil {
+		return nil, err
+	}
+
+	err = dbankv1.RegisterAccountServiceHandlerServer(ctx, mux, accountsService)
 	if err != nil {
 		return nil, err
 	}
