@@ -8,6 +8,7 @@ import (
 	"github.com/amjadjibon/dbank/pkg/dbx"
 	"github.com/amjadjibon/dbank/pkg/passw"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -44,58 +45,55 @@ func (a Service) CreateAccount(
 		return nil, status.Errorf(codes.Internal, "failed to hash password")
 	}
 
-	tx, err := a.db.Pool.Begin(ctx)
-	if err != nil {
-		a.logger.ErrorContext(ctx, "failed to begin transaction", "error", err)
-		return nil, status.Errorf(codes.Internal, "failed to begin transaction")
-	}
-	defer func() {
-		if err := tx.Rollback(ctx); err != nil {
-			a.logger.ErrorContext(ctx, "failed to rollback transaction", "error", err)
+	err = dbx.RunInTx(ctx, a.db, func(ctx context.Context, tx pgx.Tx) error {
+		sql, args, err := a.db.Builder.
+			Insert("dbank_users").
+			Columns("id", "username", "email", "password").
+			Values(uuid.NewString(), request.Username, request.Email, hashedPassword).
+			ToSql()
+		if err != nil {
+			a.logger.ErrorContext(ctx, "failed to build SQL query", "error", err)
+			return status.Errorf(codes.Internal, "failed to build SQL query")
 		}
-	}()
 
-	sql, args, err := a.db.Builder.
-		Insert("dbank_users").
-		Columns("id", "username", "email", "password").
-		Values(uuid.NewString(), request.Username, request.Email, hashedPassword).
-		ToSql()
+		_, err = tx.Exec(ctx, sql, args...)
+		if err != nil {
+			a.logger.ErrorContext(ctx, "failed to execute SQL query", "error", err)
+			return status.Errorf(codes.Internal, "failed to execute SQL query")
+		}
+
+		a.logger.InfoContext(ctx, "account created successfully",
+			"username", request.Username,
+			"email", request.Email,
+		)
+		sql, args, err = a.db.Builder.
+			Insert("dbank_accounts").
+			Columns("id", "user_id", "balance").
+			Values(uuid.NewString(), request.Username, 0).
+			ToSql()
+		if err != nil {
+			a.logger.ErrorContext(ctx, "failed to build SQL query", "error", err)
+			return status.Errorf(codes.Internal, "failed to build SQL query")
+		}
+		_, err = tx.Exec(ctx, sql, args...)
+		if err != nil {
+			a.logger.ErrorContext(ctx, "failed to execute SQL query", "error", err)
+			return status.Errorf(codes.Internal, "failed to execute SQL query")
+		}
+		a.logger.InfoContext(ctx, "account created successfully",
+			"username", request.Username,
+			"email", request.Email,
+		)
+		return nil
+	})
 	if err != nil {
-		a.logger.ErrorContext(ctx, "failed to build SQL query", "error", err)
-		return nil, status.Errorf(codes.Internal, "failed to build SQL query")
-	}
-	_, err = tx.Exec(ctx, sql, args...)
-	if err != nil {
-		a.logger.ErrorContext(ctx, "failed to execute SQL query", "error", err)
-		return nil, status.Errorf(codes.Internal, "failed to execute SQL query")
+		a.logger.ErrorContext(ctx, "failed to create account", "error", err)
+		return nil, status.Errorf(codes.Internal, "failed to create account")
 	}
 	a.logger.InfoContext(ctx, "account created successfully",
 		"username", request.Username,
 		"email", request.Email,
 	)
-
-	sql, args, err = a.db.Builder.
-		Insert("dbank_accounts").
-		Columns("id", "user_id", "balance").
-		Values(uuid.NewString(), request.Username, 0).
-		ToSql()
-	if err != nil {
-		a.logger.ErrorContext(ctx, "failed to build SQL query", "error", err)
-		return nil, status.Errorf(codes.Internal, "failed to build SQL query")
-	}
-	_, err = tx.Exec(ctx, sql, args...)
-	if err != nil {
-		a.logger.ErrorContext(ctx, "failed to execute SQL query", "error", err)
-		return nil, status.Errorf(codes.Internal, "failed to execute SQL query")
-	}
-	a.logger.InfoContext(ctx, "account created successfully",
-		"username", request.Username,
-		"email", request.Email,
-	)
-	if err = tx.Commit(ctx); err != nil {
-		a.logger.ErrorContext(ctx, "failed to commit transaction", "error", err)
-		return nil, status.Errorf(codes.Internal, "failed to commit transaction")
-	}
 
 	return &dbankv1.CreateAccountResponse{
 		Username: request.Username,
