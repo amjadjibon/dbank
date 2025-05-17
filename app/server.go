@@ -18,6 +18,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/amjadjibon/dbank/app/accounts"
+	"github.com/amjadjibon/dbank/app/store"
 	"github.com/amjadjibon/dbank/app/swagger"
 	"github.com/amjadjibon/dbank/app/users"
 	"github.com/amjadjibon/dbank/conf"
@@ -61,7 +62,8 @@ func NewServer(
 	usersService := users.NewService()
 	usersv1.RegisterUsersServiceServer(grpcServer, usersService)
 
-	accountsService := accounts.NewService(logger, db)
+	store := store.NewStore(db, logger)
+	accountsService := accounts.NewService(logger, store)
 	dbankv1.RegisterAccountServiceServer(grpcServer, accountsService)
 
 	reflection.Register(grpcServer)

@@ -3,29 +3,29 @@ package accounts
 import (
 	"context"
 	"log/slog"
+	"strconv"
 
+	"github.com/amjadjibon/dbank/app/store"
 	dbankv1 "github.com/amjadjibon/dbank/gen/go/dbank/v1"
-	"github.com/amjadjibon/dbank/pkg/dbx"
 	"github.com/amjadjibon/dbank/pkg/passw"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type Service struct {
-	logger *slog.Logger
-	db     *dbx.Postgres
+	logger       *slog.Logger
+	accountStore *store.Store
 	dbankv1.UnimplementedAccountServiceServer
 }
 
 func NewService(
 	logger *slog.Logger,
-	db *dbx.Postgres,
+	accountStore *store.Store,
 ) *Service {
 	return &Service{
-		db:     db,
-		logger: logger,
+		accountStore: accountStore,
+		logger:       logger,
 	}
 }
 
@@ -45,55 +45,24 @@ func (a Service) CreateAccount(
 		return nil, status.Errorf(codes.Internal, "failed to hash password")
 	}
 
-	err = dbx.RunInTx(ctx, a.db, func(ctx context.Context, tx pgx.Tx) error {
-		sql, args, err := a.db.Builder.
-			Insert("dbank_users").
-			Columns("id", "username", "email", "password").
-			Values(uuid.NewString(), request.Username, request.Email, hashedPassword).
-			ToSql()
-		if err != nil {
-			a.logger.ErrorContext(ctx, "failed to build SQL query", "error", err)
-			return status.Errorf(codes.Internal, "failed to build SQL query")
-		}
+	balance, err := strconv.ParseFloat(request.AccountBalance, 64)
+	if err != nil {
+		a.logger.ErrorContext(ctx, "failed to parse balance", "error", err)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid balance")
+	}
 
-		_, err = tx.Exec(ctx, sql, args...)
-		if err != nil {
-			a.logger.ErrorContext(ctx, "failed to execute SQL query", "error", err)
-			return status.Errorf(codes.Internal, "failed to execute SQL query")
-		}
-
-		a.logger.InfoContext(ctx, "account created successfully",
-			"username", request.Username,
-			"email", request.Email,
-		)
-		sql, args, err = a.db.Builder.
-			Insert("dbank_accounts").
-			Columns("id", "user_id", "balance").
-			Values(uuid.NewString(), request.Username, 0).
-			ToSql()
-		if err != nil {
-			a.logger.ErrorContext(ctx, "failed to build SQL query", "error", err)
-			return status.Errorf(codes.Internal, "failed to build SQL query")
-		}
-		_, err = tx.Exec(ctx, sql, args...)
-		if err != nil {
-			a.logger.ErrorContext(ctx, "failed to execute SQL query", "error", err)
-			return status.Errorf(codes.Internal, "failed to execute SQL query")
-		}
-		a.logger.InfoContext(ctx, "account created successfully",
-			"username", request.Username,
-			"email", request.Email,
-		)
-		return nil
+	err = a.accountStore.CreateAccount(ctx, &store.CreateUserRequest{
+		ID:            uuid.New().String(),
+		Username:      request.Username,
+		Email:         request.Email,
+		Password:      hashedPassword,
+		AccountNumber: request.AccountName,
+		Balance:       balance,
 	})
 	if err != nil {
 		a.logger.ErrorContext(ctx, "failed to create account", "error", err)
 		return nil, status.Errorf(codes.Internal, "failed to create account")
 	}
-	a.logger.InfoContext(ctx, "account created successfully",
-		"username", request.Username,
-		"email", request.Email,
-	)
 
 	return &dbankv1.CreateAccountResponse{
 		Username: request.Username,
