@@ -23,7 +23,6 @@ import (
 	"github.com/amjadjibon/dbank/app/users"
 	"github.com/amjadjibon/dbank/conf"
 	dbankv1 "github.com/amjadjibon/dbank/gen/go/dbank/v1"
-	usersv1 "github.com/amjadjibon/dbank/gen/go/users/v1"
 	"github.com/amjadjibon/dbank/pkg/dbx"
 	"github.com/amjadjibon/dbank/pkg/log"
 )
@@ -60,7 +59,7 @@ func NewServer(
 	grpcServer := grpc.NewServer(opts...)
 
 	usersService := users.NewService()
-	usersv1.RegisterUsersServiceServer(grpcServer, usersService)
+	dbankv1.RegisterUsersServiceServer(grpcServer, usersService)
 
 	store := store.NewStore(db, logger)
 	accountsService := accounts.NewService(logger, store)
@@ -69,7 +68,7 @@ func NewServer(
 	reflection.Register(grpcServer)
 
 	mux := runtime.NewServeMux()
-	err = usersv1.RegisterUsersServiceHandlerServer(ctx, mux, usersService)
+	err = dbankv1.RegisterUsersServiceHandlerServer(ctx, mux, usersService)
 	if err != nil {
 		return nil, err
 	}

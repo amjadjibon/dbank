@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	usersv1 "github.com/amjadjibon/dbank/gen/go/users/v1"
+	usersv1 "github.com/amjadjibon/dbank/gen/go/dbank/v1"
 )
 
 type Service struct {
