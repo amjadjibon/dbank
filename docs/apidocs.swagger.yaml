@@ -11,6 +11,30 @@ produces:
   - application/json
 paths:
   /dbank/v1/accounts:
+    get:
+      operationId: AccountService_ListAccounts
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1ListAccountsResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: page
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pageSize
+          in: query
+          required: false
+          type: string
+          format: uint64
+      tags:
+        - AccountService
     post:
       operationId: AccountService_CreateAccount
       responses:
@@ -294,6 +318,17 @@ definitions:
         type: string
       createdAt:
         type: string
+  v1ListAccountsResponse:
+    type: object
+    properties:
+      accounts:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1GetAccountResponse'
+      totalCount:
+        type: string
+        format: uint64
   v1UpdateAccountResponse:
     type: object
     properties:

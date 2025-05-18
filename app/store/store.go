@@ -173,6 +173,72 @@ func (s *Store) GetAccount(
 	return &account, nil
 }
 
+// GetAllAccounts retrieves all accounts
+func (s *Store) GetAllAccounts(
+	ctx context.Context,
+	page uint64,
+	pageSize uint64,
+) ([]*AccountDetails, error) {
+	sql, args, err := s.db.Builder.
+		Select(
+			"u.id", "u.username", "u.email",
+			"a.id as account_id", "a.account_name", "a.account_type",
+			"a.account_number", "a.balance", "a.currency", "a.status",
+		).
+		From("dbank_users u").
+		Join("dbank_accounts a ON a.user_pk = u.pk").
+		Where("u.deleted_at IS NULL").
+		Where("a.deleted_at IS NULL").
+		OrderBy("u.created_at DESC").
+		Limit(pageSize).
+		Offset((page - 1) * pageSize).
+		ToSql()
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to build SQL query", "error", err)
+		return nil, status.Errorf(codes.Internal, "failed to build SQL query")
+	}
+	rows, err := s.db.Pool.Query(ctx, sql, args...)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to query accounts", "error", err)
+		return nil, status.Errorf(codes.Internal, "failed to query accounts")
+	}
+	defer rows.Close()
+	var accounts []*AccountDetails
+	for rows.Next() {
+		var account AccountDetails
+		err = rows.Scan(
+			&account.ID,
+			&account.Username,
+			&account.Email,
+			&account.AccountID,
+			&account.AccountName,
+			&account.AccountType,
+			&account.AccountNumber,
+			&account.Balance,
+			&account.Currency,
+			&account.Status,
+		)
+		if err != nil {
+			s.logger.ErrorContext(ctx, "failed to scan account", "error", err)
+			return nil, status.Errorf(codes.Internal, "failed to scan account")
+		}
+		accounts = append(accounts, &account)
+	}
+
+	if err = rows.Err(); err != nil {
+		s.logger.ErrorContext(ctx, "failed to iterate accounts", "error", err)
+		return nil, status.Errorf(codes.Internal, "failed to iterate accounts")
+	}
+
+	if len(accounts) == 0 {
+		s.logger.ErrorContext(ctx, "no accounts found")
+		return nil, status.Errorf(codes.NotFound, "no accounts found")
+	}
+
+	s.logger.InfoContext(ctx, "accounts retrieved", "count", len(accounts))
+	return accounts, nil
+}
+
 func (s *Store) UpdateAccount(
 	ctx context.Context,
 	request *UpdateAccountRequest,
@@ -503,7 +569,6 @@ func (s *Store) GetTransaction(
 		&transaction.CreatedAt,
 		&transaction.UpdatedAt,
 	)
-
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			s.logger.ErrorContext(ctx, "transaction not found", "id", id)

@@ -20,6 +20,12 @@ service AccountService {
     };
   }
 
+  rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse) {
+    option (google.api.http) = {
+      get: "/dbank/v1/accounts"
+    };
+  }
+
   rpc UpdateAccount(UpdateAccountRequest) returns (UpdateAccountResponse) {
     option (google.api.http) = {
       put: "/dbank/v1/accounts/{id}"
@@ -73,6 +79,16 @@ message GetAccountResponse {
   string account_balance = 7;
   string account_currency = 8;
   string account_status = 9;
+}
+
+message ListAccountsRequest {
+  uint64 page = 1;
+  uint64 page_size = 2;
+}
+
+message ListAccountsResponse {
+  repeated GetAccountResponse accounts = 1;
+  uint64 total_count = 2;
 }
 
 message UpdateAccountRequest {

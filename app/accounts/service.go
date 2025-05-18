@@ -102,6 +102,38 @@ func (a Service) CreateAccount(
 	}, nil
 }
 
+// GetAccounts
+func (a Service) ListAccounts(
+	ctx context.Context,
+	request *dbankv1.ListAccountsRequest,
+) (*dbankv1.ListAccountsResponse, error) {
+	// Get all accounts
+	accounts, err := a.accountStore.GetAllAccounts(ctx, request.Page, request.PageSize)
+	if err != nil {
+		a.logger.ErrorContext(ctx, "failed to get accounts", "error", err)
+		return nil, status.Errorf(codes.Internal, "failed to get accounts: %v", err)
+	}
+
+	var accountList []*dbankv1.GetAccountResponse
+	for _, account := range accounts {
+		accountList = append(accountList, &dbankv1.GetAccountResponse{
+			Id:              account.ID,
+			Username:        account.Username,
+			Email:           account.Email,
+			AccountName:     account.AccountName,
+			AccountType:     account.AccountType,
+			AccountBalance:  strconv.FormatFloat(account.Balance, 'f', 2, 64),
+			AccountCurrency: account.Currency,
+			AccountStatus:   account.Status,
+		})
+	}
+
+	return &dbankv1.ListAccountsResponse{
+		Accounts:   accountList,
+		TotalCount: uint64(len(accountList)),
+	}, nil
+}
+
 func (a Service) GetAccount(
 	ctx context.Context,
 	request *dbankv1.GetAccountRequest,
