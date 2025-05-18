@@ -26,12 +26,12 @@ type CreateTransactionRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	FromAccountId   string  `protobuf:"bytes,1,opt,name=from_account_id,json=fromAccountId,proto3" json:"from_account_id,omitempty"`
-	ToAccountId     string  `protobuf:"bytes,2,opt,name=to_account_id,json=toAccountId,proto3" json:"to_account_id,omitempty"`
-	TransactionType string  `protobuf:"bytes,3,opt,name=transaction_type,json=transactionType,proto3" json:"transaction_type,omitempty"`
-	Amount          float64 `protobuf:"fixed64,4,opt,name=amount,proto3" json:"amount,omitempty"`
-	Currency        string  `protobuf:"bytes,5,opt,name=currency,proto3" json:"currency,omitempty"`
-	Description     string  `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
+	FromAccountId   string `protobuf:"bytes,1,opt,name=from_account_id,json=fromAccountId,proto3" json:"from_account_id,omitempty"`
+	ToAccountId     string `protobuf:"bytes,2,opt,name=to_account_id,json=toAccountId,proto3" json:"to_account_id,omitempty"`
+	TransactionType string `protobuf:"bytes,3,opt,name=transaction_type,json=transactionType,proto3" json:"transaction_type,omitempty"`
+	Amount          string `protobuf:"bytes,4,opt,name=amount,proto3" json:"amount,omitempty"`
+	Currency        string `protobuf:"bytes,5,opt,name=currency,proto3" json:"currency,omitempty"`
+	Description     string `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
 }
 
 func (x *CreateTransactionRequest) Reset() {
@@ -87,11 +87,11 @@ func (x *CreateTransactionRequest) GetTransactionType() string {
 	return ""
 }
 
-func (x *CreateTransactionRequest) GetAmount() float64 {
+func (x *CreateTransactionRequest) GetAmount() string {
 	if x != nil {
 		return x.Amount
 	}
-	return 0
+	return ""
 }
 
 func (x *CreateTransactionRequest) GetCurrency() string {
@@ -113,15 +113,15 @@ type CreateTransactionResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id              string  `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	FromAccountId   string  `protobuf:"bytes,2,opt,name=from_account_id,json=fromAccountId,proto3" json:"from_account_id,omitempty"`
-	ToAccountId     string  `protobuf:"bytes,3,opt,name=to_account_id,json=toAccountId,proto3" json:"to_account_id,omitempty"`
-	TransactionType string  `protobuf:"bytes,4,opt,name=transaction_type,json=transactionType,proto3" json:"transaction_type,omitempty"`
-	Amount          float64 `protobuf:"fixed64,5,opt,name=amount,proto3" json:"amount,omitempty"`
-	Currency        string  `protobuf:"bytes,6,opt,name=currency,proto3" json:"currency,omitempty"`
-	Description     string  `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
-	Status          string  `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`
-	CreatedAt       string  `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Id              string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	FromAccountId   string `protobuf:"bytes,2,opt,name=from_account_id,json=fromAccountId,proto3" json:"from_account_id,omitempty"`
+	ToAccountId     string `protobuf:"bytes,3,opt,name=to_account_id,json=toAccountId,proto3" json:"to_account_id,omitempty"`
+	TransactionType string `protobuf:"bytes,4,opt,name=transaction_type,json=transactionType,proto3" json:"transaction_type,omitempty"`
+	Amount          string `protobuf:"bytes,5,opt,name=amount,proto3" json:"amount,omitempty"`
+	Currency        string `protobuf:"bytes,6,opt,name=currency,proto3" json:"currency,omitempty"`
+	Description     string `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
+	Status          string `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`
+	CreatedAt       string `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 }
 
 func (x *CreateTransactionResponse) Reset() {
@@ -184,11 +184,11 @@ func (x *CreateTransactionResponse) GetTransactionType() string {
 	return ""
 }
 
-func (x *CreateTransactionResponse) GetAmount() float64 {
+func (x *CreateTransactionResponse) GetAmount() string {
 	if x != nil {
 		return x.Amount
 	}
-	return 0
+	return ""
 }
 
 func (x *CreateTransactionResponse) GetCurrency() string {
@@ -271,15 +271,15 @@ type GetTransactionResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id              string  `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	FromAccountId   string  `protobuf:"bytes,2,opt,name=from_account_id,json=fromAccountId,proto3" json:"from_account_id,omitempty"`
-	ToAccountId     string  `protobuf:"bytes,3,opt,name=to_account_id,json=toAccountId,proto3" json:"to_account_id,omitempty"`
-	TransactionType string  `protobuf:"bytes,4,opt,name=transaction_type,json=transactionType,proto3" json:"transaction_type,omitempty"`
-	Amount          float64 `protobuf:"fixed64,5,opt,name=amount,proto3" json:"amount,omitempty"`
-	Currency        string  `protobuf:"bytes,6,opt,name=currency,proto3" json:"currency,omitempty"`
-	Description     string  `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
-	Status          string  `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`
-	CreatedAt       string  `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Id              string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	FromAccountId   string `protobuf:"bytes,2,opt,name=from_account_id,json=fromAccountId,proto3" json:"from_account_id,omitempty"`
+	ToAccountId     string `protobuf:"bytes,3,opt,name=to_account_id,json=toAccountId,proto3" json:"to_account_id,omitempty"`
+	TransactionType string `protobuf:"bytes,4,opt,name=transaction_type,json=transactionType,proto3" json:"transaction_type,omitempty"`
+	Amount          string `protobuf:"bytes,5,opt,name=amount,proto3" json:"amount,omitempty"` // Changed from double to string
+	Currency        string `protobuf:"bytes,6,opt,name=currency,proto3" json:"currency,omitempty"`
+	Description     string `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
+	Status          string `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`
+	CreatedAt       string `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 }
 
 func (x *GetTransactionResponse) Reset() {
@@ -342,11 +342,11 @@ func (x *GetTransactionResponse) GetTransactionType() string {
 	return ""
 }
 
-func (x *GetTransactionResponse) GetAmount() float64 {
+func (x *GetTransactionResponse) GetAmount() string {
 	if x != nil {
 		return x.Amount
 	}
-	return 0
+	return ""
 }
 
 func (x *GetTransactionResponse) GetCurrency() string {
@@ -394,7 +394,7 @@ var file_dbank_v1_transaction_proto_rawDesc = []byte{
 	0x10, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x74, 0x79, 0x70,
 	0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63,
 	0x74, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75,
-	0x6e, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74,
+	0x6e, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74,
 	0x12, 0x1a, 0x0a, 0x08, 0x63, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x63, 0x79, 0x18, 0x05, 0x20, 0x01,
 	0x28, 0x09, 0x52, 0x08, 0x63, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x63, 0x79, 0x12, 0x20, 0x0a, 0x0b,
 	0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x06, 0x20, 0x01, 0x28,
@@ -410,7 +410,7 @@ var file_dbank_v1_transaction_proto_rawDesc = []byte{
 	0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x04, 0x20, 0x01,
 	0x28, 0x09, 0x52, 0x0f, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x54,
 	0x79, 0x70, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x05, 0x20,
-	0x01, 0x28, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x63,
+	0x01, 0x28, 0x09, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x63,
 	0x75, 0x72, 0x72, 0x65, 0x6e, 0x63, 0x79, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x63,
 	0x75, 0x72, 0x72, 0x65, 0x6e, 0x63, 0x79, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72,
 	0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65,
@@ -431,7 +431,7 @@ var file_dbank_v1_transaction_proto_rawDesc = []byte{
 	0x12, 0x29, 0x0a, 0x10, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f,
 	0x74, 0x79, 0x70, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x74, 0x72, 0x61, 0x6e,
 	0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x61,
-	0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f,
+	0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x61, 0x6d, 0x6f,
 	0x75, 0x6e, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x63, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x63, 0x79, 0x18,
 	0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x63, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x63, 0x79, 0x12,
 	0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x07,

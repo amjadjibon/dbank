@@ -25,7 +25,7 @@ message CreateTransactionRequest {
   string from_account_id = 1;
   string to_account_id = 2;
   string transaction_type = 3;
-  double amount = 4;
+  string amount = 4; 
   string currency = 5;
   string description = 6;
 }
@@ -35,7 +35,7 @@ message CreateTransactionResponse {
   string from_account_id = 2;
   string to_account_id = 3;
   string transaction_type = 4;
-  double amount = 5;
+  string amount = 5;
   string currency = 6;
   string description = 7;
   string status = 8;
@@ -51,7 +51,7 @@ message GetTransactionResponse {
   string from_account_id = 2;
   string to_account_id = 3;
   string transaction_type = 4;
-  double amount = 5;
+  string amount = 5; // Changed from double to string
   string currency = 6;
   string description = 7;
   string status = 8;
