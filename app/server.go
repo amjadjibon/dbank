@@ -22,8 +22,11 @@ import (
 	"github.com/amjadjibon/dbank/app/swagger"
 	"github.com/amjadjibon/dbank/conf"
 	dbankv1 "github.com/amjadjibon/dbank/gen/go/dbank/v1"
+	"github.com/amjadjibon/dbank/pkg/amqpx"
 	"github.com/amjadjibon/dbank/pkg/dbx"
 	"github.com/amjadjibon/dbank/pkg/log"
+	"github.com/amjadjibon/dbank/pkg/mongox"
+	"github.com/amjadjibon/dbank/pkg/redisx"
 )
 
 type Server struct {
@@ -52,6 +55,61 @@ func NewServer(
 	}
 	logger.InfoContext(ctx, "connected to database",
 		"db_url", cfg.DbURL,
+	)
+
+	redisClient, err := redisx.NewRedisClient(ctx, cfg.RedisURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to Redis: %w", err)
+	}
+
+	if err = redisClient.Ping(ctx).Err(); err != nil {
+		return nil, fmt.Errorf("failed to ping Redis: %w", err)
+	}
+	logger.InfoContext(ctx, "connected to Redis",
+		"redis_url", cfg.RedisURL,
+	)
+	defer func() {
+		if err := redisClient.Close(); err != nil {
+			logger.ErrorContext(ctx, "failed to close Redis client",
+				"error", err,
+			)
+		}
+	}()
+
+	mongoClient, err := mongox.NewMongoClient(ctx, cfg.MongoURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
+	}
+
+	if err = mongoClient.Ping(ctx, nil); err != nil {
+		return nil, fmt.Errorf("failed to ping MongoDB: %w", err)
+	}
+	logger.InfoContext(ctx, "connected to MongoDB",
+		"mongo_url", cfg.MongoURL,
+	)
+
+	defer func() {
+		if err := mongoClient.Disconnect(ctx); err != nil {
+			logger.ErrorContext(ctx, "failed to disconnect MongoDB client",
+				"error", err,
+			)
+		}
+	}()
+	// Initialize RabbitMQ client
+	rabbitmqClient, err := amqpx.NewRabbitMQClient(cfg.RabbitMQURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
+	}
+	defer func() {
+		if err := rabbitmqClient.Close(); err != nil {
+			logger.ErrorContext(ctx, "failed to close RabbitMQ client",
+				"error", err,
+			)
+		}
+	}()
+
+	logger.InfoContext(ctx, "connected to RabbitMQ",
+		"rabbitmq_url", cfg.RabbitMQURL,
 	)
 
 	var opts []grpc.ServerOption

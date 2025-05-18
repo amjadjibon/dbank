@@ -1,4 +1,4 @@
-package ampqx
+package amqpx
 
 import (
 	"fmt"
@@ -32,11 +32,13 @@ func NewRabbitMQClient(uri string) (*RabbitMQClient, error) {
 }
 
 // Close closes the RabbitMQ connection and channel
-func (c *RabbitMQClient) Close() {
+func (c *RabbitMQClient) Close() error {
 	if c.Channel != nil {
 		c.Channel.Close()
 	}
 	if c.Conn != nil {
 		c.Conn.Close()
 	}
+
+	return nil
 }
