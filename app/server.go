@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -38,6 +39,7 @@ type Server struct {
 	httpServer     *http.Server
 	consumer       *consumer.Consumer
 	rabbitmqClient *amqpx.RabbitMQClient
+	mongoClient    *mongo.Client
 }
 
 func NewServer(
@@ -168,6 +170,17 @@ func NewServer(
 	messageConsumer.RegisterHandler(amqpx.TransactionSuccessRoute, consumer.ProcessSuccessfulTransaction(logger))
 	messageConsumer.RegisterHandler(amqpx.TransactionFailureRoute, consumer.ProcessFailedTransaction(logger))
 
+	// Register MongoDB ledger handler for successful transactions
+	const mongoDatabaseName = "dbank"
+
+	// Ensure MongoDB indexes are created for ledger collection
+	if err := consumer.EnsureLedgerIndexes(ctx, mongoClient, mongoDatabaseName); err != nil {
+		return nil, fmt.Errorf("failed to create MongoDB indexes: %w", err)
+	}
+
+	messageConsumer.RegisterHandler(amqpx.TransactionSuccessRoute,
+		consumer.NewMongoLedgerConsumer(logger, mongoClient, mongoDatabaseName))
+
 	return &Server{
 		logger:         logger,
 		grpcListener:   grpcListener,
@@ -175,6 +188,7 @@ func NewServer(
 		httpServer:     httpServer,
 		consumer:       messageConsumer,
 		rabbitmqClient: rabbitmqClient,
+		mongoClient:    mongoClient,
 	}, nil
 }
 
@@ -245,6 +259,17 @@ func (s *Server) Shutdown(ctx context.Context) error {
 
 	// Stop the RabbitMQ consumer
 	s.consumer.Stop(ctx)
+
+	// Close MongoDB connection
+	if s.mongoClient != nil {
+		if err := s.mongoClient.Disconnect(ctx); err != nil {
+			s.logger.ErrorContext(ctx, "failed to disconnect MongoDB client",
+				"error", err,
+			)
+		} else {
+			s.logger.InfoContext(ctx, "MongoDB connection closed")
+		}
+	}
 
 	// Close RabbitMQ connection
 	if s.rabbitmqClient != nil {
