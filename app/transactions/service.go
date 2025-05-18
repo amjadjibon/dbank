@@ -3,9 +3,11 @@ package transactions
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/amjadjibon/dbank/app/store"
 	dbankv1 "github.com/amjadjibon/dbank/gen/go/dbank/v1"
+	"github.com/amjadjibon/dbank/pkg/amqpx"
 	"github.com/shopspring/decimal" // Added import
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -15,6 +17,7 @@ import (
 type Service struct {
 	logger           *slog.Logger
 	transactionStore *store.Store
+	rabbitmqClient   *amqpx.RabbitMQClient
 	dbankv1.UnimplementedTransactionServiceServer
 }
 
@@ -22,10 +25,12 @@ type Service struct {
 func NewService(
 	logger *slog.Logger,
 	transactionStore *store.Store,
+	rabbitmqClient *amqpx.RabbitMQClient,
 ) *Service {
 	return &Service{
 		logger:           logger,
 		transactionStore: transactionStore,
+		rabbitmqClient:   rabbitmqClient,
 	}
 }
 
@@ -106,13 +111,12 @@ func (t *Service) CreateTransaction(
 		return nil, status.Errorf(codes.Internal, "failed to create transaction: %v", err)
 	}
 
-	if err != nil {
-		t.logger.ErrorContext(ctx, "failed to create transaction", "error", err)
-		return nil, status.Errorf(codes.Internal, "failed to create transaction: %v", err)
-	}
+	// Generate transaction ID
+	transactionID := request.FromAccountId + request.ToAccountId
 
-	return &dbankv1.CreateTransactionResponse{
-		Id:              request.FromAccountId + request.ToAccountId,
+	// Create a transaction response
+	response := &dbankv1.CreateTransactionResponse{
+		Id:              transactionID,
 		FromAccountId:   request.FromAccountId,
 		ToAccountId:     request.ToAccountId,
 		TransactionType: request.TransactionType,
@@ -120,7 +124,38 @@ func (t *Service) CreateTransaction(
 		Currency:        request.Currency,
 		Description:     request.Description,
 		Status:          "success",
-	}, nil
+	}
+
+	// Publish the transaction event to RabbitMQ
+	if t.rabbitmqClient != nil {
+		event := &amqpx.TransactionEvent{
+			TransactionID:   transactionID,
+			FromAccountID:   request.FromAccountId,
+			ToAccountID:     request.ToAccountId,
+			TransactionType: request.TransactionType,
+			Amount:          request.Amount,
+			Currency:        request.Currency,
+			Status:          "success",
+			Description:     request.Description,
+			Timestamp:       time.Now().Unix(),
+		}
+
+		if err := t.rabbitmqClient.PublishEvent(
+			ctx,
+			amqpx.TransactionExchange,
+			amqpx.TransactionSuccessRoute,
+			event,
+		); err != nil {
+			t.logger.WarnContext(ctx, "Failed to publish transaction event", "error", err)
+			// Don't fail the transaction if event publishing fails
+		} else {
+			t.logger.InfoContext(ctx, "Published transaction success event",
+				"transaction_id", transactionID,
+			)
+		}
+	}
+
+	return response, nil
 }
 
 // GetTransaction retrieves a transaction by ID

@@ -20,6 +20,7 @@ import (
 	"github.com/amjadjibon/dbank/app/accounts"
 	"github.com/amjadjibon/dbank/app/store"
 	"github.com/amjadjibon/dbank/app/swagger"
+	"github.com/amjadjibon/dbank/app/transactions"
 	"github.com/amjadjibon/dbank/conf"
 	dbankv1 "github.com/amjadjibon/dbank/gen/go/dbank/v1"
 	"github.com/amjadjibon/dbank/pkg/amqpx"
@@ -95,18 +96,17 @@ func NewServer(
 			)
 		}
 	}()
+
 	// Initialize RabbitMQ client
 	rabbitmqClient, err := amqpx.NewRabbitMQClient(cfg.RabbitMQURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
 	}
-	defer func() {
-		if err := rabbitmqClient.Close(); err != nil {
-			logger.ErrorContext(ctx, "failed to close RabbitMQ client",
-				"error", err,
-			)
-		}
-	}()
+
+	// Initialize RabbitMQ exchanges
+	if err := rabbitmqClient.EnsureExchange(amqpx.TransactionExchange, "topic"); err != nil {
+		return nil, fmt.Errorf("failed to declare RabbitMQ exchange: %w", err)
+	}
 
 	logger.InfoContext(ctx, "connected to RabbitMQ",
 		"rabbitmq_url", cfg.RabbitMQURL,
@@ -117,12 +117,20 @@ func NewServer(
 
 	store := store.NewStore(db, logger)
 	accountsService := accounts.NewService(logger, store)
+	transactionsService := transactions.NewService(logger, store, rabbitmqClient)
+
 	dbankv1.RegisterAccountServiceServer(grpcServer, accountsService)
+	dbankv1.RegisterTransactionServiceServer(grpcServer, transactionsService)
 
 	reflection.Register(grpcServer)
 
 	mux := runtime.NewServeMux()
 	err = dbankv1.RegisterAccountServiceHandlerServer(ctx, mux, accountsService)
+	if err != nil {
+		return nil, err
+	}
+
+	err = dbankv1.RegisterTransactionServiceHandlerServer(ctx, mux, transactionsService)
 	if err != nil {
 		return nil, err
 	}

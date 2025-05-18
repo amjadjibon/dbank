@@ -1,6 +1,8 @@
 package amqpx
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -41,4 +43,44 @@ func (c *RabbitMQClient) Close() error {
 	}
 
 	return nil
+}
+
+// EnsureExchange ensures that the exchange exists
+func (c *RabbitMQClient) EnsureExchange(name, kind string) error {
+	return c.Channel.ExchangeDeclare(
+		name,  // name
+		kind,  // type
+		true,  // durable
+		false, // auto-deleted
+		false, // internal
+		false, // no-wait
+		nil,   // arguments
+	)
+}
+
+// PublishEvent publishes an event to the specified exchange
+func (c *RabbitMQClient) PublishEvent(ctx context.Context, exchange, routingKey string, event interface{}) error {
+	// Ensure the exchange exists
+	if err := c.EnsureExchange(exchange, "topic"); err != nil {
+		return fmt.Errorf("failed to ensure exchange: %w", err)
+	}
+
+	// Marshal event to JSON
+	body, err := json.Marshal(event)
+	if err != nil {
+		return fmt.Errorf("failed to marshal event: %w", err)
+	}
+
+	// Publish the message
+	return c.Channel.PublishWithContext(
+		ctx,
+		exchange,   // exchange
+		routingKey, // routing key
+		false,      // mandatory
+		false,      // immediate
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        body,
+		},
+	)
 }
