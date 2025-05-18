@@ -20,7 +20,6 @@ import (
 	"github.com/amjadjibon/dbank/app/accounts"
 	"github.com/amjadjibon/dbank/app/store"
 	"github.com/amjadjibon/dbank/app/swagger"
-	"github.com/amjadjibon/dbank/app/users"
 	"github.com/amjadjibon/dbank/conf"
 	dbankv1 "github.com/amjadjibon/dbank/gen/go/dbank/v1"
 	"github.com/amjadjibon/dbank/pkg/dbx"
@@ -58,9 +57,6 @@ func NewServer(
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 
-	usersService := users.NewService()
-	dbankv1.RegisterUsersServiceServer(grpcServer, usersService)
-
 	store := store.NewStore(db, logger)
 	accountsService := accounts.NewService(logger, store)
 	dbankv1.RegisterAccountServiceServer(grpcServer, accountsService)
@@ -68,11 +64,6 @@ func NewServer(
 	reflection.Register(grpcServer)
 
 	mux := runtime.NewServeMux()
-	err = dbankv1.RegisterUsersServiceHandlerServer(ctx, mux, usersService)
-	if err != nil {
-		return nil, err
-	}
-
 	err = dbankv1.RegisterAccountServiceHandlerServer(ctx, mux, accountsService)
 	if err != nil {
 		return nil, err
