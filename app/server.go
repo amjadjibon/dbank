@@ -18,6 +18,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/amjadjibon/dbank/app/accounts"
+	"github.com/amjadjibon/dbank/app/consumer"
 	"github.com/amjadjibon/dbank/app/store"
 	"github.com/amjadjibon/dbank/app/swagger"
 	"github.com/amjadjibon/dbank/app/transactions"
@@ -31,10 +32,12 @@ import (
 )
 
 type Server struct {
-	logger       *slog.Logger
-	grpcListener net.Listener
-	grpcServer   *grpc.Server
-	httpServer   *http.Server
+	logger         *slog.Logger
+	grpcListener   net.Listener
+	grpcServer     *grpc.Server
+	httpServer     *http.Server
+	consumer       *consumer.Consumer
+	rabbitmqClient *amqpx.RabbitMQClient
 }
 
 func NewServer(
@@ -158,11 +161,20 @@ func NewServer(
 		return nil, err
 	}
 
+	// Initialize the consumer
+	messageConsumer := consumer.NewConsumer(rabbitmqClient, logger)
+
+	// Register transaction event handlers
+	messageConsumer.RegisterHandler(amqpx.TransactionSuccessRoute, consumer.ProcessSuccessfulTransaction(logger))
+	messageConsumer.RegisterHandler(amqpx.TransactionFailureRoute, consumer.ProcessFailedTransaction(logger))
+
 	return &Server{
-		logger:       logger,
-		grpcListener: grpcListener,
-		grpcServer:   grpcServer,
-		httpServer:   httpServer,
+		logger:         logger,
+		grpcListener:   grpcListener,
+		grpcServer:     grpcServer,
+		httpServer:     httpServer,
+		consumer:       messageConsumer,
+		rabbitmqClient: rabbitmqClient,
 	}, nil
 }
 
@@ -188,6 +200,15 @@ func (s *Server) Start(ctx context.Context) error {
 
 		if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errCh <- errors.Join(err, errors.New("failed to serve HTTP"))
+		}
+	}()
+
+	// Start RabbitMQ consumer
+	go func() {
+		s.logger.InfoContext(ctx, "starting RabbitMQ consumer...")
+
+		if err := s.consumer.Start(ctx); err != nil {
+			errCh <- errors.Join(err, errors.New("failed to start RabbitMQ consumer"))
 		}
 	}()
 
@@ -221,5 +242,17 @@ func (s *Server) Shutdown(ctx context.Context) error {
 
 	s.grpcServer.GracefulStop()
 	s.logger.InfoContext(ctx, "gRPC server stopped gracefully.")
+
+	// Stop the RabbitMQ consumer
+	s.consumer.Stop(ctx)
+
+	// Close RabbitMQ connection
+	if s.rabbitmqClient != nil {
+		if err := s.rabbitmqClient.Close(); err != nil {
+			s.logger.ErrorContext(ctx, "failed to close RabbitMQ client", "error", err)
+		}
+		s.logger.InfoContext(ctx, "RabbitMQ client closed gracefully.")
+	}
+
 	return nil
 }
