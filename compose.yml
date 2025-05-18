@@ -1,4 +1,22 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dbank_app
+    environment:
+      - ENV=dev
+      - DB_URL=postgres://postgres:postgres@postgres:5432/dbank
+      - REDIS_URL=redis:6379
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - MONGO_URL=mongodb://mongo:27017/dbank
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - mongo
   postgres:
     image: postgres:17-alpine
     container_name: dbank_postgres

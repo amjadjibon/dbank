@@ -4,6 +4,11 @@ build: lint
 	@CGO_ENABLED=0 GOFLAGS="-buildvcs=true" go build -o bin/dbank
 	@echo "Build complete"
 
+
+build-release:
+	@CGO_ENABLED=0 GOFLAGS="-buildvcs=true" go build -o bin/dbank
+	@echo "Release build complete"
+
 gen:
 	@echo "Generating..."
 	@cd proto && buf generate && cd ..

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -16,9 +17,20 @@ type RabbitMQClient struct {
 
 // NewRabbitMQClient creates a new RabbitMQ client
 func NewRabbitMQClient(uri string) (*RabbitMQClient, error) {
-	conn, err := amqp.Dial(uri)
+	var conn *amqp.Connection
+	var err error
+	maxRetries := 10
+
+	for i := 0; i < maxRetries; i++ {
+		conn, err = amqp.Dial(uri)
+		if err == nil {
+			break
+		}
+		fmt.Printf("[RabbitMQ] Connection failed: %v. Retrying in 2s... (%d/%d)\n", err, i+1, maxRetries)
+		time.Sleep(2 * time.Second)
+	}
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
+		return nil, fmt.Errorf("failed to connect to RabbitMQ after %d attempts: %w", maxRetries, err)
 	}
 
 	ch, err := conn.Channel()
