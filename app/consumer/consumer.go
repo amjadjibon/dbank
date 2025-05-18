@@ -11,10 +11,8 @@ import (
 	"github.com/amjadjibon/dbank/pkg/amqpx"
 )
 
-// MessageHandler defines a function to process amqp messages
 type MessageHandler func(ctx context.Context, delivery amqp.Delivery) error
 
-// Consumer handles consuming and processing RabbitMQ messages
 type Consumer struct {
 	logger         *slog.Logger
 	rabbitmqClient *amqpx.RabbitMQClient
@@ -23,7 +21,6 @@ type Consumer struct {
 	cancel         context.CancelFunc
 }
 
-// NewConsumer creates a new RabbitMQ consumer
 func NewConsumer(rabbitmqClient *amqpx.RabbitMQClient, logger *slog.Logger) *Consumer {
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -36,12 +33,10 @@ func NewConsumer(rabbitmqClient *amqpx.RabbitMQClient, logger *slog.Logger) *Con
 	}
 }
 
-// RegisterHandler registers a handler for a specific routing key
 func (c *Consumer) RegisterHandler(routingKey string, handler MessageHandler) {
 	c.handlers[routingKey] = handler
 }
 
-// Start begins consuming messages from the specified exchange
 func (c *Consumer) Start(ctx context.Context) error {
 	exchange := amqpx.TransactionExchange
 	queueName := "dbank.transactions.consumer"
@@ -62,13 +57,11 @@ func (c *Consumer) Start(ctx context.Context) error {
 	return nil
 }
 
-// Stop stops the consumer
 func (c *Consumer) Stop(ctx context.Context) {
 	c.logger.InfoContext(ctx, "stopping RabbitMQ consumer")
 	c.cancel()
 }
 
-// consumeMessages processes messages from the delivery channel
 func (c *Consumer) consumeMessages(deliveries <-chan amqp.Delivery) {
 	for {
 		select {
@@ -86,7 +79,6 @@ func (c *Consumer) consumeMessages(deliveries <-chan amqp.Delivery) {
 	}
 }
 
-// handleMessage processes an individual message
 func (c *Consumer) handleMessage(delivery amqp.Delivery) {
 	// Create a new context for handling this specific message
 	ctx := context.Background()
@@ -102,22 +94,19 @@ func (c *Consumer) handleMessage(delivery amqp.Delivery) {
 		c.logger.WarnContext(ctx, "no handler registered for routing key",
 			"routing_key", delivery.RoutingKey,
 		)
-		// Acknowledge the message to remove it from the queue
-		// since we don't have a handler for it
+
 		if err := delivery.Ack(false); err != nil {
 			c.logger.ErrorContext(ctx, "failed to acknowledge message", "error", err)
 		}
 		return
 	}
 
-	// Process the message with the handler
 	if err := handler(ctx, delivery); err != nil {
 		c.logger.ErrorContext(ctx, "failed to process message",
 			"error", err,
 			"routing_key", delivery.RoutingKey,
 		)
 
-		// Reject the message, requeue it for later processing
 		if err := delivery.Reject(true); err != nil {
 			c.logger.ErrorContext(ctx, "failed to reject message", "error", err)
 		}
@@ -130,7 +119,6 @@ func (c *Consumer) handleMessage(delivery amqp.Delivery) {
 	}
 }
 
-// DefaultTransactionHandler provides a default implementation for handling transaction events
 func DefaultTransactionHandler(logger *slog.Logger) MessageHandler {
 	return func(ctx context.Context, delivery amqp.Delivery) error {
 		var event amqpx.TransactionEvent
@@ -150,8 +138,6 @@ func DefaultTransactionHandler(logger *slog.Logger) MessageHandler {
 	}
 }
 
-// ProcessSuccessfulTransaction creates a handler that processes successful transactions
-// This is an example of a more advanced transaction handler that could be used in production
 func ProcessSuccessfulTransaction(logger *slog.Logger) MessageHandler {
 	return func(ctx context.Context, delivery amqp.Delivery) error {
 		var event amqpx.TransactionEvent
@@ -167,15 +153,6 @@ func ProcessSuccessfulTransaction(logger *slog.Logger) MessageHandler {
 			"currency", event.Currency,
 		)
 
-		// Here you could implement:
-		// 1. Updating transaction status in database
-		// 2. Sending notifications
-		// 3. Generating reports
-		// 4. Triggering downstream processes
-
-		// Example: Simulate some processing time
-		// time.Sleep(100 * time.Millisecond)
-
 		logger.InfoContext(ctx, "transaction processed successfully",
 			"transaction_id", event.TransactionID,
 		)
@@ -184,7 +161,6 @@ func ProcessSuccessfulTransaction(logger *slog.Logger) MessageHandler {
 	}
 }
 
-// ProcessFailedTransaction handles failed transactions
 func ProcessFailedTransaction(logger *slog.Logger) MessageHandler {
 	return func(ctx context.Context, delivery amqp.Delivery) error {
 		var event amqpx.TransactionEvent
@@ -199,12 +175,6 @@ func ProcessFailedTransaction(logger *slog.Logger) MessageHandler {
 			"currency", event.Currency,
 			"status", event.Status,
 		)
-
-		// Here you could implement:
-		// 1. Recording failure details
-		// 2. Notification to support team
-		// 3. Automatic retry logic
-		// 4. Customer notification
 
 		logger.InfoContext(ctx, "failed transaction processed",
 			"transaction_id", event.TransactionID,

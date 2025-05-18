@@ -18,11 +18,10 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/amjadjibon/dbank/app/accounts"
 	"github.com/amjadjibon/dbank/app/consumer"
+	"github.com/amjadjibon/dbank/app/service"
 	"github.com/amjadjibon/dbank/app/store"
 	"github.com/amjadjibon/dbank/app/swagger"
-	"github.com/amjadjibon/dbank/app/transactions"
 	"github.com/amjadjibon/dbank/conf"
 	dbankv1 "github.com/amjadjibon/dbank/gen/go/dbank/v1"
 	"github.com/amjadjibon/dbank/pkg/amqpx"
@@ -120,9 +119,9 @@ func NewServer(
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 
-	store := store.NewStore(db, logger)
-	accountsService := accounts.NewService(logger, store)
-	transactionsService := transactions.NewService(logger, store, rabbitmqClient)
+	storage := store.NewStore(db, logger)
+	accountsService := service.NewAccountService(logger, storage)
+	transactionsService := service.NewTransactionService(logger, storage, rabbitmqClient)
 
 	dbankv1.RegisterAccountServiceServer(grpcServer, accountsService)
 	dbankv1.RegisterTransactionServiceServer(grpcServer, transactionsService)

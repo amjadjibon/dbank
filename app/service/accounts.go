@@ -1,4 +1,4 @@
-package accounts
+package service
 
 import (
 	"context"
@@ -13,25 +13,25 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type Service struct {
+type AccountService struct {
 	logger       *slog.Logger
 	accountStore *store.Store
 	dbankv1.UnimplementedAccountServiceServer
 }
 
-func NewService(
+func NewAccountService(
 	logger *slog.Logger,
 	accountStore *store.Store,
-) *Service {
-	return &Service{
+) *AccountService {
+	return &AccountService{
 		accountStore: accountStore,
 		logger:       logger,
 	}
 }
 
-var _ dbankv1.AccountServiceServer = (*Service)(nil)
+var _ dbankv1.AccountServiceServer = (*AccountService)(nil)
 
-func (a Service) CreateAccount(
+func (a *AccountService) CreateAccount(
 	ctx context.Context,
 	request *dbankv1.CreateAccountRequest,
 ) (*dbankv1.CreateAccountResponse, error) {
@@ -103,7 +103,7 @@ func (a Service) CreateAccount(
 }
 
 // GetAccounts
-func (a Service) ListAccounts(
+func (a *AccountService) ListAccounts(
 	ctx context.Context,
 	request *dbankv1.ListAccountsRequest,
 ) (*dbankv1.ListAccountsResponse, error) {
@@ -134,7 +134,7 @@ func (a Service) ListAccounts(
 	}, nil
 }
 
-func (a Service) GetAccount(
+func (a *AccountService) GetAccount(
 	ctx context.Context,
 	request *dbankv1.GetAccountRequest,
 ) (*dbankv1.GetAccountResponse, error) {
@@ -164,7 +164,7 @@ func (a Service) GetAccount(
 	}, nil
 }
 
-func (a Service) UpdateAccount(
+func (a *AccountService) UpdateAccount(
 	ctx context.Context,
 	request *dbankv1.UpdateAccountRequest,
 ) (*dbankv1.UpdateAccountResponse, error) {
@@ -263,7 +263,7 @@ func (a Service) UpdateAccount(
 	}, nil
 }
 
-func (a Service) DeleteAccount(
+func (a *AccountService) DeleteAccount(
 	ctx context.Context,
 	request *dbankv1.DeleteAccountRequest,
 ) (*dbankv1.DeleteAccountResponse, error) {

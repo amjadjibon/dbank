@@ -1,4 +1,4 @@
-package transactions
+package service
 
 import (
 	"context"
@@ -8,26 +8,26 @@ import (
 	"github.com/amjadjibon/dbank/app/store"
 	dbankv1 "github.com/amjadjibon/dbank/gen/go/dbank/v1"
 	"github.com/amjadjibon/dbank/pkg/amqpx"
-	"github.com/shopspring/decimal" // Added import
+	"github.com/shopspring/decimal"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-// Service represents the transaction service
-type Service struct {
+// TransactionService represents the transaction service
+type TransactionService struct {
 	logger           *slog.Logger
 	transactionStore *store.Store
 	rabbitmqClient   *amqpx.RabbitMQClient
 	dbankv1.UnimplementedTransactionServiceServer
 }
 
-// NewService creates a new transaction service
-func NewService(
+// NewTransactionService creates a new transaction service
+func NewTransactionService(
 	logger *slog.Logger,
 	transactionStore *store.Store,
 	rabbitmqClient *amqpx.RabbitMQClient,
-) *Service {
-	return &Service{
+) *TransactionService {
+	return &TransactionService{
 		logger:           logger,
 		transactionStore: transactionStore,
 		rabbitmqClient:   rabbitmqClient,
@@ -35,10 +35,10 @@ func NewService(
 }
 
 // Ensure Service implements the TransactionServiceServer interface
-var _ dbankv1.TransactionServiceServer = (*Service)(nil)
+var _ dbankv1.TransactionServiceServer = (*TransactionService)(nil)
 
 // CreateTransaction creates a new transaction
-func (t *Service) CreateTransaction(
+func (t *TransactionService) CreateTransaction(
 	ctx context.Context,
 	request *dbankv1.CreateTransactionRequest,
 ) (*dbankv1.CreateTransactionResponse, error) {
@@ -159,7 +159,7 @@ func (t *Service) CreateTransaction(
 }
 
 // GetTransaction retrieves a transaction by ID
-func (t *Service) GetTransaction(
+func (t *TransactionService) GetTransaction(
 	ctx context.Context,
 	request *dbankv1.GetTransactionRequest,
 ) (*dbankv1.GetTransactionResponse, error) {
